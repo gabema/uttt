@@ -1,0 +1,152 @@
+@using uttt.game
+@namespace uttt.app.Shared
+
+<div class="utt-container">
+    <div class="next-player">Next: @CurrentPlayer</div>
+    @if (GetLargeBoardWinner() != SpotState.Open)
+    {
+        <div class="game-over">Game Over — Winner: @(GetLargeBoardWinner() == SpotState.X ? "X" : GetLargeBoardWinner() == SpotState.O ? "O" : "Draw")</div>
+    }
+    <div class="utt-grid">
+        @for (int big = 0; big < 9; big++) {
+            <div class="small-board @(IsHighlighted(big) ? "highlight" : "")" @key="big">
+                @for (int i = 0; i < 9; i++) {
+                    int globalIndex = big * 9 + i;
+                    <div class="cell" @onclick="() => OnCellClick(globalIndex)">
+                        @GetSymbol(big, i)
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public LargeSquare? Board { get; set; }
+
+    private LargeSquare boardState = LargeSquare.NewBoard();
+    private Player CurrentPlayer = Player.One;
+    // -1 means any board allowed. Otherwise 0-8 meaning specific small board index
+    private int NextBoardToPlay = -1;
+
+    protected override void OnInitialized()
+    {
+        if (Board is not null) boardState = Board.Value;
+    }
+
+    private void OnCellClick(int globalIndex)
+    {
+        if (GetLargeBoardWinner() != SpotState.Open) return; // game over, ignore clicks
+        int big = globalIndex / 9;
+        int small = globalIndex % 9;
+
+        // Map to spot and set if open
+        var s = GetSpot(big, small);
+        // enforce next-board rule
+        if (s == SpotState.Open && (NextBoardToPlay == -1 || NextBoardToPlay == big || BoardIsFullOrClosed(GetSmallSquare(boardState, NextBoardToPlay))))
+        {
+            var newSpot = CurrentPlayer == Player.One ? SpotState.X : SpotState.O;
+            boardState = SetSpot(boardState, big, small, newSpot);
+            // compute next board: the small index of the spot played (0-8)
+            NextBoardToPlay = small;
+            // if the target board is full or closed, allow any
+            if (BoardIsFullOrClosed(GetSmallSquare(boardState, NextBoardToPlay))) NextBoardToPlay = -1;
+            CurrentPlayer = CurrentPlayer == Player.One ? Player.Two : Player.One;
+        }
+    }
+
+    private SpotState GetSpot(int big, int small)
+    {
+        var sq = GetSmallSquare(boardState, big);
+        return small switch
+        {
+            0 => sq.TopLeft,
+            1 => sq.TopMiddle,
+            2 => sq.TopRight,
+            3 => sq.MiddleLeft,
+            4 => sq.MiddleMiddle,
+            5 => sq.MiddleRight,
+            6 => sq.BottomLeft,
+            7 => sq.BottomMiddle,
+            8 => sq.BottomRight,
+            _ => SpotState.Open
+        };
+    }
+
+    private LargeSquare SetSpot(LargeSquare src, int big, int small, SpotState value)
+    {
+        var s = GetSmallSquare(src, big);
+        SmallSquare updated = small switch
+        {
+            0 => s with { TopLeft = value },
+            1 => s with { TopMiddle = value },
+            2 => s with { TopRight = value },
+            3 => s with { MiddleLeft = value },
+            4 => s with { MiddleMiddle = value },
+            5 => s with { MiddleRight = value },
+            6 => s with { BottomLeft = value },
+            7 => s with { BottomMiddle = value },
+            8 => s with { BottomRight = value },
+            _ => s
+        };
+
+        return big switch
+        {
+            0 => new LargeSquare(updated, src.TopMiddle, src.TopRight, src.MiddleLeft, src.MiddleMiddle, src.MiddleRight, src.BottomLeft, src.BottomMiddle, src.BottomRight),
+            1 => new LargeSquare(src.TopLeft, updated, src.TopRight, src.MiddleLeft, src.MiddleMiddle, src.MiddleRight, src.BottomLeft, src.BottomMiddle, src.BottomRight),
+            2 => new LargeSquare(src.TopLeft, src.TopMiddle, updated, src.MiddleLeft, src.MiddleMiddle, src.MiddleRight, src.BottomLeft, src.BottomMiddle, src.BottomRight),
+            3 => new LargeSquare(src.TopLeft, src.TopMiddle, src.TopRight, updated, src.MiddleMiddle, src.MiddleRight, src.BottomLeft, src.BottomMiddle, src.BottomRight),
+            4 => new LargeSquare(src.TopLeft, src.TopMiddle, src.TopRight, src.MiddleLeft, updated, src.MiddleRight, src.BottomLeft, src.BottomMiddle, src.BottomRight),
+            5 => new LargeSquare(src.TopLeft, src.TopMiddle, src.TopRight, src.MiddleLeft, src.MiddleMiddle, updated, src.BottomLeft, src.BottomMiddle, src.BottomRight),
+            6 => new LargeSquare(src.TopLeft, src.TopMiddle, src.TopRight, src.MiddleLeft, src.MiddleMiddle, src.MiddleRight, updated, src.BottomMiddle, src.BottomRight),
+            7 => new LargeSquare(src.TopLeft, src.TopMiddle, src.TopRight, src.MiddleLeft, src.MiddleMiddle, src.MiddleRight, src.BottomLeft, updated, src.BottomRight),
+            8 => new LargeSquare(src.TopLeft, src.TopMiddle, src.TopRight, src.MiddleLeft, src.MiddleMiddle, src.MiddleRight, src.BottomLeft, src.BottomMiddle, updated),
+            _ => src
+        };
+    }
+
+    private SmallSquare GetSmallSquare(LargeSquare src, int big) => big switch
+    {
+        0 => src.TopLeft,
+        1 => src.TopMiddle,
+        2 => src.TopRight,
+        3 => src.MiddleLeft,
+        4 => src.MiddleMiddle,
+        5 => src.MiddleRight,
+        6 => src.BottomLeft,
+        7 => src.BottomMiddle,
+        8 => src.BottomRight,
+        _ => src.TopLeft
+    };
+
+    private string GetSymbol(int big, int small)
+    {
+        var s = GetSpot(big, small);
+        return s switch { SpotState.X => "X", SpotState.O => "O", _ => "" };
+    }
+
+    private bool IsHighlighted(int big)
+    {
+        if (NextBoardToPlay == -1)
+        {
+            // highlight any board that is not closed/full
+            var sq = GetSmallSquare(boardState, big);
+            return !BoardIsFullOrClosed(sq);
+        }
+        return NextBoardToPlay == big;
+    }
+
+    private bool BoardIsFullOrClosed(SmallSquare s)
+    {
+        // closed if ToSpot != Open, or no open spots
+        if (s.ToSpot() != SpotState.Open) return true;
+        return !(s.TopLeft == SpotState.Open || s.TopMiddle == SpotState.Open || s.TopRight == SpotState.Open || s.MiddleLeft == SpotState.Open || s.MiddleMiddle == SpotState.Open || s.MiddleRight == SpotState.Open || s.BottomLeft == SpotState.Open || s.BottomMiddle == SpotState.Open || s.BottomRight == SpotState.Open);
+    }
+
+    private SpotState GetLargeBoardWinner()
+    {
+        // Build a LargeSquare to use its ToSpot() which now detects wins/closed
+        return boardState.ToSpot();
+    }
+}

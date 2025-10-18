@@ -66,7 +66,40 @@ SmallSquare BottomLeft, SmallSquare BottomMiddle, SmallSquare BottomRight) : ISq
             new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open)
         );
 
-    public SpotState ToSpot() => SpotState.Open;
+    public SpotState ToSpot()
+    {
+        // Determine the winner of the large square based on each small square's ToSpot()
+        var a = TopLeft.ToSpot();
+        var b = TopMiddle.ToSpot();
+        var c = TopRight.ToSpot();
+        var d = MiddleLeft.ToSpot();
+        var e = MiddleMiddle.ToSpot();
+        var f = MiddleRight.ToSpot();
+        var g = BottomLeft.ToSpot();
+        var h = BottomMiddle.ToSpot();
+        var i = BottomRight.ToSpot();
+
+        // Check rows
+        if (a == b && b == c && a != SpotState.Open) return a;
+        if (d == e && e == f && d != SpotState.Open) return d;
+        if (g == h && h == i && g != SpotState.Open) return g;
+
+        // Check columns
+        if (a == d && d == g && a != SpotState.Open) return a;
+        if (b == e && e == h && b != SpotState.Open) return b;
+        if (c == f && f == i && c != SpotState.Open) return c;
+
+        // Check diagonals
+        if (a == e && e == i && a != SpotState.Open) return a;
+        if (c == e && e == g && c != SpotState.Open) return c;
+
+        // If any small square is still Open, large board is still open
+        if (a == SpotState.Open || b == SpotState.Open || c == SpotState.Open || d == SpotState.Open || e == SpotState.Open || f == SpotState.Open || g == SpotState.Open || h == SpotState.Open || i == SpotState.Open)
+            return SpotState.Open;
+
+        // Otherwise it's closed (draw)
+        return SpotState.Closed;
+    }
 }
 
 public enum Player {

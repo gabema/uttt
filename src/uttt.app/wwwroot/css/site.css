@@ -1,0 +1,10 @@
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin: 16px; }
+.layout { display:flex; gap:24px; }
+.kanban { width:240px; }
+.card { background:#dff0d8; padding:12px; margin:8px 0; border-radius:8px; }
+.utt-grid { display:grid; grid-template-columns: repeat(3, 160px); grid-gap: 8px; }
+.small-board { width:160px; height:160px; border:2px solid #ccc; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); }
+.cell { border:1px solid #bbb; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:18px; cursor:pointer; }
+.next-player { margin-bottom:8px; font-weight:600; }
+.small-board.highlight { box-shadow: 0 0 0 4px rgba(255,200,0,0.35); background: #fff7df; }
+.game-over { margin-top:12px; padding:8px; background:#fdecea; color:#a33; border-radius:6px; font-weight:700; }
