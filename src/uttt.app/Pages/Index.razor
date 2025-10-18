@@ -1,12 +1,17 @@
 @page "/"
 @using uttt.app.Shared
-
-<h1>Ultimate Tic Tac Toe — Prototype</h1>
+@using uttt.game
 
 <div class="only-board">
-    <UttBoard />
+    <UttBoard NextPlayerChanged="OnNextPlayerChanged" />
 </div>
 
 @code {
+    private string nextPlayerText = "X";
 
+    private void OnNextPlayerChanged(Player p)
+    {
+        nextPlayerText = p == Player.One ? "X" : "O";
+        StateHasChanged();
+    }
 }

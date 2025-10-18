@@ -2,20 +2,29 @@
 @namespace uttt.app.Shared
 
 <div class="utt-container">
-    <div class="next-player">Next: @CurrentPlayer</div>
+    <div class="next-player">Next: @(CurrentPlayer == Player.One ? SpotState.X : SpotState.O)</div>
     @if (GetLargeBoardWinner() != SpotState.Open)
     {
         <div class="game-over">Game Over — Winner: @(GetLargeBoardWinner() == SpotState.X ? "X" : GetLargeBoardWinner() == SpotState.O ? "O" : "Draw")</div>
     }
     <div class="utt-grid">
         @for (int big = 0; big < 9; big++) {
-            <div class="small-board @(IsHighlighted(big) ? "highlight" : "")" @key="big">
-                @for (int i = 0; i < 9; i++) {
-                    int globalIndex = big * 9 + i;
-                    <div class="cell" @onclick="() => OnCellClick(globalIndex)">
-                        @GetSymbol(big, i)
+            var flipped = flippedIndices.Contains(big);
+            var pulsing = justCaptured.Contains(big);
+            <div class="small-board @(IsHighlighted(big) ? "highlight" : "") @(flipped ? "flipped" : "") @(pulsing ? "pulse" : "")" @key="big">
+                <div class="flip-inner">
+                    <div class="front">
+                        @for (int i = 0; i < 9; i++) {
+                            int globalIndex = big * 9 + i;
+                            <div class="cell" @onclick="() => OnCellClick(globalIndex)">
+                                @GetSymbol(big, i)
+                            </div>
+                        }
                     </div>
-                }
+                    <div class="back">
+                        @RenderWinner(big)
+                    </div>
+                </div>
             </div>
         }
     </div>
@@ -29,6 +38,10 @@
     private Player CurrentPlayer = Player.One;
     // -1 means any board allowed. Otherwise 0-8 meaning specific small board index
     private int NextBoardToPlay = -1;
+    private HashSet<int> flippedIndices = new HashSet<int>();
+    private HashSet<int> justCaptured = new HashSet<int>();
+    [Parameter]
+    public EventCallback<Player> NextPlayerChanged { get; set; }
 
     protected override void OnInitialized()
     {
@@ -50,9 +63,39 @@
             boardState = SetSpot(boardState, big, small, newSpot);
             // compute next board: the small index of the spot played (0-8)
             NextBoardToPlay = small;
+            // if current small board just became closed, flip it
+            var currentSmall = GetSmallSquare(boardState, big);
+            if (BoardIsFullOrClosed(currentSmall))
+            {
+                // schedule pulse + flip if not already flipped
+                if (!flippedIndices.Contains(big) && !justCaptured.Contains(big))
+                {
+                    _ = TriggerFlipAsync(big);
+                }
+            }
             // if the target board is full or closed, allow any
             if (BoardIsFullOrClosed(GetSmallSquare(boardState, NextBoardToPlay))) NextBoardToPlay = -1;
             CurrentPlayer = CurrentPlayer == Player.One ? Player.Two : Player.One;
+            // notify parent about next player change
+            _ = NextPlayerChanged.InvokeAsync(CurrentPlayer);
+        }
+    }
+
+    private async Task TriggerFlipAsync(int big)
+    {
+        try
+        {
+            justCaptured.Add(big);
+            // show pulse for a short time (400ms)
+            StateHasChanged();
+            await Task.Delay(400);
+            justCaptured.Remove(big);
+            // then flip (with a short additional delay to let pulse finish)
+            flippedIndices.Add(big);
+            StateHasChanged();
+        }
+        catch {
+            // ignore
         }
     }
 
@@ -125,6 +168,42 @@
         var s = GetSpot(big, small);
         return s switch { SpotState.X => "X", SpotState.O => "O", _ => "" };
     }
+
+    private RenderFragment RenderWinner(int big) => builder =>
+    {
+        var seq = 0;
+        var sq = GetSmallSquare(boardState, big);
+        var winner = sq.ToSpot();
+        if (winner == SpotState.X)
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "big-winner x");
+            builder.AddContent(seq++, "X");
+            builder.CloseElement();
+        }
+        else if (winner == SpotState.O)
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "big-winner o");
+            builder.AddContent(seq++, "O");
+            builder.CloseElement();
+        }
+        else if (winner == SpotState.Closed)
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "big-winner tie");
+            builder.AddContent(seq++, "—");
+            builder.CloseElement();
+        }
+        else
+        {
+            // default blank backface
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "big-winner blank");
+            builder.AddContent(seq++, "");
+            builder.CloseElement();
+        }
+    };
 
     private bool IsHighlighted(int big)
     {

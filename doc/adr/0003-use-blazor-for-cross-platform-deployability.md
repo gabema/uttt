@@ -1,4 +1,4 @@
-# 3. Use Maui for cross platform deployability
+# 3. Use Blazor for progressive web app framework
 
 Date: 2025-10-17
 
@@ -13,11 +13,11 @@ We need to decide on a framework for developing the Progress web app.
 
 ## Decision
 
-.NET Maui will be used to publish the static Progressive Web App.
+[Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) will be used to generate the static Progressive Web App.
 
 ## Consequences
 
 What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated.
 1. We can leverage our knowledge and expertise with .NET.
 1. We can grow our skills with Progressive Web Apps built with .NET.
-1. Since this is the first Maui based project there are new skills and understanding that must be attained.
+1. Since this is the first Blazor web assembly based project there are new skills and understanding that must be attained.
