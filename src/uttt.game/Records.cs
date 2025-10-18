@@ -6,7 +6,7 @@ public enum SpotState {
     Open,
     X,
     O,
-    Closed,
+    Draw,
 }
 
 public record struct Spot(SpotState S) {
@@ -45,25 +45,26 @@ SpotState BottomLeft, SpotState BottomMiddle, SpotState BottomRight) : ISquare<S
             : TopRight == MiddleMiddle && MiddleMiddle == BottomLeft && BottomLeft != SpotState.Open ? BottomLeft
             : TopLeft == SpotState.Open || TopMiddle == SpotState.Open || TopRight == SpotState.Open ||
               MiddleLeft == SpotState.Open || MiddleMiddle == SpotState.Open || MiddleRight == SpotState.Open ||
-              BottomLeft == SpotState.Open || BottomMiddle == SpotState.Open || BottomRight == SpotState.Open ? SpotState.Open : SpotState.Closed;
+              BottomLeft == SpotState.Open || BottomMiddle == SpotState.Open || BottomRight == SpotState.Open ? SpotState.Open : SpotState.Draw;
 }
 
-public record struct LargeSquare(SmallSquare TopLeft, SmallSquare TopMiddle, SmallSquare TopRight,
-SmallSquare MiddleLeft, SmallSquare MiddleMiddle, SmallSquare MiddleRight,
-SmallSquare BottomLeft, SmallSquare BottomMiddle, SmallSquare BottomRight) : ISquare<SmallSquare>
+public record struct LargeSquare(
+    SmallSquare TopLeft, SmallSquare TopMiddle, SmallSquare TopRight,
+    SmallSquare MiddleLeft, SmallSquare MiddleMiddle, SmallSquare MiddleRight,
+    SmallSquare BottomLeft, SmallSquare BottomMiddle, SmallSquare BottomRight) : ISquare<SmallSquare>
 {
-    public static LargeSquare NewBoard() => new LargeSquare(
-            new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
-            new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
-            new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
-
-            new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
-            new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
+    public static LargeSquare NewBoard() => new(
+            new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
+            new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
             new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
 
+            new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
+            new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
             new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
-            new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
-            new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open)
+
+            new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
+            new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
+            new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open)
         );
 
     public SpotState ToSpot()
@@ -98,7 +99,7 @@ SmallSquare BottomLeft, SmallSquare BottomMiddle, SmallSquare BottomRight) : ISq
             return SpotState.Open;
 
         // Otherwise it's closed (draw)
-        return SpotState.Closed;
+        return SpotState.Draw;
     }
 }
 

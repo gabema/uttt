@@ -188,7 +188,7 @@
             builder.AddContent(seq++, "O");
             builder.CloseElement();
         }
-        else if (winner == SpotState.Closed)
+        else if (winner == SpotState.Draw)
         {
             builder.OpenElement(seq++, "div");
             builder.AddAttribute(seq++, "class", "big-winner tie");
