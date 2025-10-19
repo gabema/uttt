@@ -1,60 +1,64 @@
-using System.Data;
-
 namespace uttt.game;
 
 public enum SpotState {
     Open,
     X,
     O,
-    Draw,
+    Draw
 }
 
-public record struct Spot(SpotState S) {
-    public SpotState ToSpot() => S;
-}
-
-public interface ISquare<T> where T : struct
+public interface ISquare<T>
 {
-    public T TopLeft {get;}
-    public T TopMiddle {get;}
-    public T TopRight {get;}
-    public T MiddleLeft {get;}
-    public T MiddleMiddle{get;}
-    public T MiddleRight {get;}
-    public T BottomLeft {get;}
-    public T BottomMiddle {get;}
-    public T BottomRight {get;}
+    public T TopLeft { get; }
+    public T TopMiddle { get; }
+    public T TopRight { get; }
+    public T MiddleLeft { get; }
+    public T MiddleMiddle { get; }
+    public T MiddleRight { get; }
+    public T BottomLeft { get; }
+    public T BottomMiddle { get; }
+    public T BottomRight { get; }
 
     public SpotState ToSpot();
 }
 
-
-
-public record struct SmallSquare(SpotState TopLeft, SpotState TopMiddle, SpotState TopRight,
-SpotState MiddleLeft, SpotState MiddleMiddle, SpotState MiddleRight,
-SpotState BottomLeft, SpotState BottomMiddle, SpotState BottomRight) : ISquare<SpotState>
+static class SpotStateUtils
 {
-    public SpotState ToSpot() =>
-            UnionEvaluator(TopLeft, TopMiddle, TopRight) ??
-            UnionEvaluator(MiddleLeft, MiddleMiddle, MiddleRight) ??
-            UnionEvaluator(BottomLeft, BottomMiddle, BottomRight) ??
-            UnionEvaluator(TopLeft, MiddleLeft, BottomLeft) ??
-            UnionEvaluator(TopMiddle, MiddleMiddle, BottomMiddle) ??
-            UnionEvaluator(TopRight, MiddleRight, BottomRight) ??
-            UnionEvaluator(TopLeft, MiddleMiddle, BottomRight) ??
-            UnionEvaluator(TopRight, MiddleMiddle, BottomLeft) ??
-            (HasOpenSpots() ? SpotState.Open : SpotState.Draw);
+    public static SpotState ToSpot(Func<SpotState> topLeft, Func<SpotState> topMiddle, Func<SpotState> topRight,
+    Func<SpotState> middleLeft, Func<SpotState> middleMiddle, Func<SpotState> middleRight,
+    Func<SpotState> bottomLeft, Func<SpotState> bottomMiddle, Func<SpotState> bottomRight)
+    {
+        var a = topLeft();
+        var b = topMiddle();
+        var c = topRight();
+        var d = middleLeft();
+        var e = middleMiddle();
+        var f = middleRight();
+        var g = bottomLeft();
+        var h = bottomMiddle();
+        var i = bottomRight();
 
-    private bool HasOpenSpots() =>
-        TopLeft == SpotState.Open ||
-        TopMiddle == SpotState.Open ||
-        TopRight == SpotState.Open ||
-        MiddleLeft == SpotState.Open ||
-        MiddleMiddle == SpotState.Open ||
-        MiddleRight == SpotState.Open ||
-        BottomLeft == SpotState.Open ||
-        BottomMiddle == SpotState.Open ||
-        BottomRight == SpotState.Open;
+        var hasOpenSpots =
+            a == SpotState.Open ||
+            b == SpotState.Open ||
+            c == SpotState.Open ||
+            d == SpotState.Open ||
+            e == SpotState.Open ||
+            f == SpotState.Open ||
+            g == SpotState.Open ||
+            h == SpotState.Open ||
+            i == SpotState.Open;
+
+        return UnionEvaluator(a, b, c) ??
+            UnionEvaluator(d, e, f) ??
+            UnionEvaluator(g, h, i) ??
+            UnionEvaluator(a, d, g) ??
+            UnionEvaluator(b, e, h) ??
+            UnionEvaluator(c, f, i) ??
+            UnionEvaluator(a, e, i) ??
+            UnionEvaluator(c, e, g) ??
+            (hasOpenSpots ? SpotState.Open : SpotState.Draw);
+    }
 
     private static SpotState? UnionEvaluator(SpotState a, SpotState b, SpotState c)
     {
@@ -66,6 +70,27 @@ SpotState BottomLeft, SpotState BottomMiddle, SpotState BottomRight) : ISquare<S
     }
 }
 
+public record struct SmallSquare(SpotState TopLeft, SpotState TopMiddle, SpotState TopRight,
+SpotState MiddleLeft, SpotState MiddleMiddle, SpotState MiddleRight,
+SpotState BottomLeft, SpotState BottomMiddle, SpotState BottomRight) : ISquare<SpotState>
+{
+    public SpotState ToSpot()
+    {
+        var local = this;
+        return SpotStateUtils.ToSpot(
+            () => local.TopLeft,
+            () => local.TopMiddle,
+            () => local.TopRight,
+            () => local.MiddleLeft,
+            () => local.MiddleMiddle,
+            () => local.MiddleRight,
+            () => local.BottomLeft,
+            () => local.BottomMiddle,
+            () => local.BottomRight
+        );
+    }
+}
+
 public record struct LargeSquare(
     SmallSquare TopLeft, SmallSquare TopMiddle, SmallSquare TopRight,
     SmallSquare MiddleLeft, SmallSquare MiddleMiddle, SmallSquare MiddleRight,
@@ -74,11 +99,11 @@ public record struct LargeSquare(
     public static LargeSquare NewBoard() => new(
             new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
             new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
-            new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
+            new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
 
             new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
             new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
-            new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
+            new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
 
             new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
             new(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open),
@@ -87,37 +112,17 @@ public record struct LargeSquare(
 
     public SpotState ToSpot()
     {
-        // Determine the winner of the large square based on each small square's ToSpot()
-        var a = TopLeft.ToSpot();
-        var b = TopMiddle.ToSpot();
-        var c = TopRight.ToSpot();
-        var d = MiddleLeft.ToSpot();
-        var e = MiddleMiddle.ToSpot();
-        var f = MiddleRight.ToSpot();
-        var g = BottomLeft.ToSpot();
-        var h = BottomMiddle.ToSpot();
-        var i = BottomRight.ToSpot();
-
-        // Check rows
-        if (a == b && b == c && a != SpotState.Open) return a;
-        if (d == e && e == f && d != SpotState.Open) return d;
-        if (g == h && h == i && g != SpotState.Open) return g;
-
-        // Check columns
-        if (a == d && d == g && a != SpotState.Open) return a;
-        if (b == e && e == h && b != SpotState.Open) return b;
-        if (c == f && f == i && c != SpotState.Open) return c;
-
-        // Check diagonals
-        if (a == e && e == i && a != SpotState.Open) return a;
-        if (c == e && e == g && c != SpotState.Open) return c;
-
-        // If any small square is still Open, large board is still open
-        if (a == SpotState.Open || b == SpotState.Open || c == SpotState.Open || d == SpotState.Open || e == SpotState.Open || f == SpotState.Open || g == SpotState.Open || h == SpotState.Open || i == SpotState.Open)
-            return SpotState.Open;
-
-        // Otherwise it's closed (draw)
-        return SpotState.Draw;
+        return SpotStateUtils.ToSpot(
+            TopLeft.ToSpot,
+            TopMiddle.ToSpot,
+            TopRight.ToSpot,
+            MiddleLeft.ToSpot,
+            MiddleMiddle.ToSpot,
+            MiddleRight.ToSpot,
+            BottomLeft.ToSpot,
+            BottomMiddle.ToSpot,
+            BottomRight.ToSpot
+        );
     }
 }
 
