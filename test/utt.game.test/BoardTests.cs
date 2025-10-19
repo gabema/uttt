@@ -33,11 +33,33 @@ public class BoardTests
     {
         // create three small squares that are X winners
         var xWon = new SmallSquare(SpotState.X, SpotState.X, SpotState.X, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open);
-    var open = new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open);
-    var board = new LargeSquare(xWon, xWon, xWon,
-                   open, open, open,
-                   open, open, open);
+        var open = new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open);
+        var board = new LargeSquare(xWon, xWon, xWon,
+                       open, open, open,
+                       open, open, open);
         // Expect large board ToSpot to be X since top row small boards are X
         Assert.Equal(SpotState.X, board.ToSpot());
+    }
+
+    [Fact]
+    public void SmallSquareOpen()
+    {
+        var small = new SmallSquare(
+            SpotState.Open, SpotState.Open, SpotState.Open,
+            SpotState.O, SpotState.O, SpotState.Open,
+            SpotState.X, SpotState.X, SpotState.Open);
+
+        Assert.Equal(SpotState.Open, small.ToSpot());
+    }
+
+    [Fact]
+    public void SmallSquareX()
+    {
+        var small = new SmallSquare(
+            SpotState.X, SpotState.Open, SpotState.Open,
+            SpotState.Open, SpotState.O, SpotState.O,
+            SpotState.X, SpotState.X, SpotState.X);
+
+        Assert.Equal(SpotState.X, small.ToSpot());
     }
 }

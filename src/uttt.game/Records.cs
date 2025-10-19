@@ -35,17 +35,35 @@ SpotState MiddleLeft, SpotState MiddleMiddle, SpotState MiddleRight,
 SpotState BottomLeft, SpotState BottomMiddle, SpotState BottomRight) : ISquare<SpotState>
 {
     public SpotState ToSpot() =>
-            TopLeft == TopMiddle && TopMiddle == TopRight && TopRight != SpotState.Open ? TopRight
-            : MiddleLeft == MiddleMiddle && MiddleMiddle == MiddleRight && MiddleRight != SpotState.Open ? MiddleLeft
-            : BottomLeft == BottomMiddle && BottomRight == BottomRight && BottomLeft != SpotState.Open ? BottomLeft
-            : TopLeft == MiddleLeft && MiddleLeft == BottomLeft && BottomLeft != SpotState.Open ? BottomLeft
-            : TopMiddle == MiddleMiddle && MiddleMiddle == BottomMiddle && BottomMiddle != SpotState.Open ? BottomMiddle
-            : TopRight == MiddleRight && MiddleRight == BottomRight && BottomRight != SpotState.Open ? BottomRight
-            : TopLeft == MiddleMiddle && MiddleMiddle == BottomRight && BottomRight != SpotState.Open ? BottomRight
-            : TopRight == MiddleMiddle && MiddleMiddle == BottomLeft && BottomLeft != SpotState.Open ? BottomLeft
-            : TopLeft == SpotState.Open || TopMiddle == SpotState.Open || TopRight == SpotState.Open ||
-              MiddleLeft == SpotState.Open || MiddleMiddle == SpotState.Open || MiddleRight == SpotState.Open ||
-              BottomLeft == SpotState.Open || BottomMiddle == SpotState.Open || BottomRight == SpotState.Open ? SpotState.Open : SpotState.Draw;
+            UnionEvaluator(TopLeft, TopMiddle, TopRight) ??
+            UnionEvaluator(MiddleLeft, MiddleMiddle, MiddleRight) ??
+            UnionEvaluator(BottomLeft, BottomMiddle, BottomRight) ??
+            UnionEvaluator(TopLeft, MiddleLeft, BottomLeft) ??
+            UnionEvaluator(TopMiddle, MiddleMiddle, BottomMiddle) ??
+            UnionEvaluator(TopRight, MiddleRight, BottomRight) ??
+            UnionEvaluator(TopLeft, MiddleMiddle, BottomRight) ??
+            UnionEvaluator(TopRight, MiddleMiddle, BottomLeft) ??
+            (HasOpenSpots() ? SpotState.Open : SpotState.Draw);
+
+    private bool HasOpenSpots() =>
+        TopLeft == SpotState.Open ||
+        TopMiddle == SpotState.Open ||
+        TopRight == SpotState.Open ||
+        MiddleLeft == SpotState.Open ||
+        MiddleMiddle == SpotState.Open ||
+        MiddleRight == SpotState.Open ||
+        BottomLeft == SpotState.Open ||
+        BottomMiddle == SpotState.Open ||
+        BottomRight == SpotState.Open;
+
+    private static SpotState? UnionEvaluator(SpotState a, SpotState b, SpotState c)
+    {
+        if (a == b && b == c && a != SpotState.Open)
+        {
+            return a;
+        }
+        return null;
+    }
 }
 
 public record struct LargeSquare(

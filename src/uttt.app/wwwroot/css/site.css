@@ -14,7 +14,7 @@
 	.app-header .controls { flex-direction: row; align-items:center; }
 	.app-header .controls nav a { display:inline-block; padding:0; }
 }
-.utt-container { width: 100%; height: 100%; display:flex; align-items: center; justify-content: center; }
+.utt-container { width: 100%; height: 100%; display:flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; padding: 12px; box-sizing: border-box; }
 .card { background:#dff0d8; padding:12px; margin:8px 0; border-radius:8px; }
 .utt-grid { display:grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr; gap: 8px; 
 	/* Constrain grid to available viewport area */
@@ -24,9 +24,9 @@
 .small-board { width: 100%; height: 100%; border:2px solid #ccc; display:block; box-sizing: border-box; position: relative; }
 .small-board > .flip-inner, .front, .back { width:100%; height:100%; }
 .cell { border:1px solid #bbb; display:flex; align-items:center; justify-content:center; font-weight:700; font-size: clamp(12px, 2.5vmin, 20px); cursor:pointer; box-sizing: border-box; }
-.next-player { margin-bottom:8px; font-weight:600; }
+.next-player { font-weight:600; text-align:center; }
 .small-board.highlight { box-shadow: 0 0 0 4px rgba(255,200,0,0.35); background: #fff7df; }
-.game-over { margin-top:12px; padding:8px; background:#fdecea; color:#a33; border-radius:6px; font-weight:700; }
+.game-over { padding:8px; background:#fdecea; color:#a33; border-radius:6px; font-weight:700; text-align:center; }
 
 /* Flip animation */
 .small-board { perspective: 800px; }
