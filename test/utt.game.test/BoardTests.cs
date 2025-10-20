@@ -1,11 +1,132 @@
+namespace utt.game.test;
+
 using Xunit;
 using uttt.game;
 using System;
 
-namespace utt.game.test;
-
 public class BoardTests
 {
+    private static SmallSquare NewDrawSquare() => new(SpotState.X, SpotState.X, SpotState.O,
+                                    SpotState.O, SpotState.O, SpotState.X,
+                                    SpotState.X, SpotState.O, SpotState.X);
+
+    private static SmallSquare NewWinSquare(SpotState winner) => new(winner, winner, winner,
+                                    SpotState.Open, SpotState.Open, SpotState.Open,
+                                    SpotState.Open, SpotState.Open, SpotState.Open);
+    private static SmallSquare NewOpenSquare() => new(SpotState.Open, SpotState.Open, SpotState.Open,
+                                    SpotState.Open, SpotState.Open, SpotState.Open,
+                                    SpotState.Open, SpotState.Open, SpotState.Open);
+
+    public static readonly object[] LargeSquareTests =
+    [
+        new object[]
+        {
+            LargeSquare.NewBoard(),
+            SpotState.Open
+        },
+        // Expect large board ToSpot to be X since top row small boards are X
+        new object[]
+        {
+            new LargeSquare(
+                NewWinSquare(SpotState.X), NewWinSquare(SpotState.X), NewWinSquare(SpotState.X),
+                NewOpenSquare(), NewOpenSquare(), NewOpenSquare(),
+                NewOpenSquare(), NewOpenSquare(), NewOpenSquare()),
+            SpotState.X
+        },
+        // Expect large board ToSpot to be O since right row in small boards are O
+        new object[]
+        {
+            new LargeSquare(
+                NewOpenSquare(), NewOpenSquare(), NewWinSquare(SpotState.O),
+                NewOpenSquare(), NewOpenSquare(), NewWinSquare(SpotState.O),
+                NewOpenSquare(), NewOpenSquare(), NewWinSquare(SpotState.O)),
+            SpotState.O
+        },
+        // Expect large board to be Open since no three in a row (not counting 3 in a row draws)
+        new object[]
+        {
+            new LargeSquare(
+                NewOpenSquare(), NewOpenSquare(), NewOpenSquare(),
+                NewDrawSquare(), NewDrawSquare(), NewDrawSquare(),
+                NewOpenSquare(), NewOpenSquare(), NewOpenSquare()),
+            SpotState.Open
+        },
+        new object[]
+        {
+            new LargeSquare(
+                NewDrawSquare(), NewDrawSquare(), NewDrawSquare(),
+                NewDrawSquare(), NewDrawSquare(), NewDrawSquare(),
+                NewDrawSquare(), NewDrawSquare(), NewDrawSquare()),
+            SpotState.Draw
+        }
+    ];
+
+    public static readonly object[] SmallSquareTests =
+    [
+        new object[]
+        {
+            new SmallSquare(
+                SpotState.Open, SpotState.Open, SpotState.Open,
+                SpotState.Open, SpotState.Open, SpotState.Open,
+                SpotState.Open, SpotState.Open, SpotState.Open),
+            SpotState.Open
+        },
+        new object[]
+        {
+            new SmallSquare(
+                SpotState.O, SpotState.Open, SpotState.O,
+                SpotState.X, SpotState.X, SpotState.Open,
+                SpotState.Open, SpotState.Open, SpotState.Open),
+            SpotState.Open
+        },
+        new object[]
+        {
+            new SmallSquare(
+                SpotState.X, SpotState.O, SpotState.X,
+                SpotState.O, SpotState.X, SpotState.Open,
+                SpotState.Open, SpotState.Open, SpotState.X),
+            SpotState.X
+        },
+        new object[]
+        {
+            new SmallSquare(
+                SpotState.O, SpotState.O, SpotState.O,
+                SpotState.O, SpotState.O, SpotState.Open,
+                SpotState.X, SpotState.Open, SpotState.X),
+            SpotState.O
+        },
+        new object[]
+        {
+            new SmallSquare(
+                SpotState.O, SpotState.Open, SpotState.O,
+                SpotState.O, SpotState.Open, SpotState.O,
+                SpotState.X, SpotState.Open, SpotState.O),
+            SpotState.O
+        },
+        new object[]
+        {
+            new SmallSquare(
+                SpotState.X, SpotState.O, SpotState.X,
+                SpotState.X, SpotState.O, SpotState.O,
+                SpotState.O, SpotState.X, SpotState.X),
+            SpotState.Draw
+        }
+    ];
+
+    [Theory]
+    [MemberData(nameof(SmallSquareTests))]
+    public void TestSmallSquareScenarios(SmallSquare board, SpotState expected)
+    {
+        Assert.Equal(expected, board.ToSpot());
+    }
+
+    [Theory]
+    [MemberData(nameof(LargeSquareTests))]
+    public void TestLargeSquareScenarios(LargeSquare board, SpotState expected)
+    {
+        Assert.Equal(expected, board.ToSpot());
+    }
+
     [Fact]
     public void CanCreateBoard()
     {
@@ -19,47 +140,5 @@ public class BoardTests
         var updatedBoard = board with {MiddleMiddle = board.MiddleMiddle with {MiddleMiddle = SpotState.X}};
         Console.WriteLine(updatedBoard);
         Assert.NotEqual(board, updatedBoard);
-    }
-
-    [Fact]
-    public void SmallSquare_ToSpot_ReturnsOpenWhenEmpty()
-    {
-        var s = new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open);
-        Assert.Equal(SpotState.Open, s.ToSpot());
-    }
-
-    [Fact]
-    public void LargeSquare_Detects_Win_When_ThreeSmallBoardsInRow()
-    {
-        // create three small squares that are X winners
-        var xWon = new SmallSquare(SpotState.X, SpotState.X, SpotState.X, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open);
-        var open = new SmallSquare(SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open, SpotState.Open);
-        var board = new LargeSquare(xWon, xWon, xWon,
-                       open, open, open,
-                       open, open, open);
-        // Expect large board ToSpot to be X since top row small boards are X
-        Assert.Equal(SpotState.X, board.ToSpot());
-    }
-
-    [Fact]
-    public void SmallSquareOpen()
-    {
-        var small = new SmallSquare(
-            SpotState.Open, SpotState.Open, SpotState.Open,
-            SpotState.O, SpotState.O, SpotState.Open,
-            SpotState.X, SpotState.X, SpotState.Open);
-
-        Assert.Equal(SpotState.Open, small.ToSpot());
-    }
-
-    [Fact]
-    public void SmallSquareX()
-    {
-        var small = new SmallSquare(
-            SpotState.X, SpotState.Open, SpotState.Open,
-            SpotState.Open, SpotState.O, SpotState.O,
-            SpotState.X, SpotState.X, SpotState.X);
-
-        Assert.Equal(SpotState.X, small.ToSpot());
     }
 }

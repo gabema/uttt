@@ -26,17 +26,11 @@ static class SpotStateUtils
 {
     public static SpotState ToSpot(Func<SpotState> topLeft, Func<SpotState> topMiddle, Func<SpotState> topRight,
     Func<SpotState> middleLeft, Func<SpotState> middleMiddle, Func<SpotState> middleRight,
-    Func<SpotState> bottomLeft, Func<SpotState> bottomMiddle, Func<SpotState> bottomRight)
+    Func<SpotState> bottomLeft, Func<SpotState> bottomMiddle, Func<SpotState> bottomRight, bool includeDraw)
     {
-        var a = topLeft();
-        var b = topMiddle();
-        var c = topRight();
-        var d = middleLeft();
-        var e = middleMiddle();
-        var f = middleRight();
-        var g = bottomLeft();
-        var h = bottomMiddle();
-        var i = bottomRight();
+        var (a, b, c) = (topLeft(), topMiddle(), topRight());
+        var (d, e, f) = (middleLeft(), middleMiddle(), middleRight());
+        var (g, h, i) = (bottomLeft(), bottomMiddle(), bottomRight());
 
         var hasOpenSpots =
             a == SpotState.Open ||
@@ -49,21 +43,25 @@ static class SpotStateUtils
             h == SpotState.Open ||
             i == SpotState.Open;
 
-        return UnionEvaluator(a, b, c) ??
-            UnionEvaluator(d, e, f) ??
-            UnionEvaluator(g, h, i) ??
-            UnionEvaluator(a, d, g) ??
-            UnionEvaluator(b, e, h) ??
-            UnionEvaluator(c, f, i) ??
-            UnionEvaluator(a, e, i) ??
-            UnionEvaluator(c, e, g) ??
+        return UnionEvaluator(a, b, c, includeDraw) ??
+            UnionEvaluator(d, e, f, includeDraw) ??
+            UnionEvaluator(g, h, i, includeDraw) ??
+            UnionEvaluator(a, d, g, includeDraw) ??
+            UnionEvaluator(b, e, h, includeDraw) ??
+            UnionEvaluator(c, f, i, includeDraw) ??
+            UnionEvaluator(a, e, i, includeDraw) ??
+            UnionEvaluator(c, e, g, includeDraw) ??
             (hasOpenSpots ? SpotState.Open : SpotState.Draw);
     }
 
-    private static SpotState? UnionEvaluator(SpotState a, SpotState b, SpotState c)
+    private static SpotState? UnionEvaluator(SpotState a, SpotState b, SpotState c, bool includeDraw)
     {
-        if (a == b && b == c && a != SpotState.Open)
+        if (a == b && b == c && c != SpotState.Open)
         {
+            if (!includeDraw && c == SpotState.Draw)
+            {
+                return null;
+            }
             return a;
         }
         return null;
@@ -71,8 +69,8 @@ static class SpotStateUtils
 }
 
 public record struct SmallSquare(SpotState TopLeft, SpotState TopMiddle, SpotState TopRight,
-SpotState MiddleLeft, SpotState MiddleMiddle, SpotState MiddleRight,
-SpotState BottomLeft, SpotState BottomMiddle, SpotState BottomRight) : ISquare<SpotState>
+    SpotState MiddleLeft, SpotState MiddleMiddle, SpotState MiddleRight,
+    SpotState BottomLeft, SpotState BottomMiddle, SpotState BottomRight) : ISquare<SpotState>
 {
     public SpotState ToSpot()
     {
@@ -86,7 +84,8 @@ SpotState BottomLeft, SpotState BottomMiddle, SpotState BottomRight) : ISquare<S
             () => local.MiddleRight,
             () => local.BottomLeft,
             () => local.BottomMiddle,
-            () => local.BottomRight
+            () => local.BottomRight,
+            includeDraw: false
         );
     }
 }
@@ -112,7 +111,7 @@ public record struct LargeSquare(
 
     public SpotState ToSpot()
     {
-        return SpotStateUtils.ToSpot(
+        var spot = SpotStateUtils.ToSpot(
             TopLeft.ToSpot,
             TopMiddle.ToSpot,
             TopRight.ToSpot,
@@ -121,8 +120,10 @@ public record struct LargeSquare(
             MiddleRight.ToSpot,
             BottomLeft.ToSpot,
             BottomMiddle.ToSpot,
-            BottomRight.ToSpot
+            BottomRight.ToSpot,
+            includeDraw: false
         );
+        return spot;
     }
 }
 
