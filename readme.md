@@ -35,3 +35,6 @@ podman ps
 podman exec -it <container_id> bash
 /usr/local/structurizr$ adr list
 ```
+
+## Deploying to gh-pages
+Changes checked into main are continuously deployed to gh-pages via Github actions. Site is available at [Ultimate Tic Tac Toe](https://gabema.github.io/uttt/wwwroot/)
