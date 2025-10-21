@@ -17,12 +17,12 @@
       "status" : "Accepted",
       "title" : "Use Excalidraw as a digital whiteboard"
     }, {
-      "content" : "# 3. Use Maui for cross platform deployability\n\nDate: 2025-10-17\n\n## Status\n\nAccepted\n\n## Context\n\nThe issue motivating this decision, and any context that influences or constrains the decision.\nWe need to decide on a framework for developing the Progress web app.\n\n## Decision\n\n.NET Maui will be used to publish the static Progressive Web App.\n\n## Consequences\n\nWhat becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated.\n1. We can leverage our knowledge and expertise with .NET.\n1. We can grow our skills with Progressive Web Apps built with .NET.\n1. Since this is the first Maui based project there are new skills and understanding that must be attained.",
+      "content" : "# 3. Use Blazor for progressive web app framework\n\nDate: 2025-10-17\n\n## Status\n\nAccepted\n\n## Context\n\nThe issue motivating this decision, and any context that influences or constrains the decision.\nWe need to decide on a framework for developing the Progress web app.\n\n## Decision\n\n[Blazor](https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor) will be used to generate the static Progressive Web App.\n\n## Consequences\n\nWhat becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated.\n1. We can leverage our knowledge and expertise with .NET.\n1. We can grow our skills with Progressive Web Apps built with .NET.\n1. Since this is the first Blazor web assembly based project there are new skills and understanding that must be attained.",
       "date" : "2025-10-17T00:00:00Z",
       "format" : "Markdown",
       "id" : "3",
       "status" : "Accepted",
-      "title" : "Use Maui for cross platform deployability"
+      "title" : "Use Blazor for progressive web app framework"
     }, {
       "content" : "# 4. Implement CICD via Github actions\n\nDate: 2025-10-17\n\n## Status\n\nAccepted\n\n## Context\n\nBuild and deploy automation should be implemented in the project.\n\n## Decision\n\nThe project should automatically be compiled and unit tested whenever changes are posted in a PR.\n\nThe project should be deployed anytime the main branch committed to.\n\n## Consequences\n\nThe project will be reliably deployed and iterated on without manual intervention.",
       "date" : "2025-10-17T00:00:00Z",
@@ -40,7 +40,7 @@
     } ]
   },
   "id" : 1,
-  "lastModifiedDate" : "2025-10-18T01:18:09Z",
+  "lastModifiedDate" : "2025-10-21T02:59:21Z",
   "model" : {
     "people" : [ {
       "description" : "A person playing the game",
@@ -53,20 +53,20 @@
       "relationships" : [ {
         "description" : "Uses",
         "destinationId" : "4",
-        "id" : "7",
+        "id" : "6",
         "sourceId" : "1",
         "tags" : "Relationship"
       }, {
         "description" : "Uses",
         "destinationId" : "3",
-        "id" : "8",
-        "linkedRelationshipId" : "7",
+        "id" : "7",
+        "linkedRelationshipId" : "6",
         "sourceId" : "1"
       }, {
         "description" : "Uses",
         "destinationId" : "2",
-        "id" : "9",
-        "linkedRelationshipId" : "7",
+        "id" : "8",
+        "linkedRelationshipId" : "6",
         "sourceId" : "1"
       } ],
       "tags" : "Element,Person"
@@ -74,51 +74,35 @@
     "softwareSystems" : [ {
       "containers" : [ {
         "components" : [ {
-          "description" : "Renders the UI",
+          "description" : "Ultimate Tic Tac Toe App",
           "documentation" : { },
           "id" : "4",
-          "name" : "View",
+          "name" : "uttt.app",
           "properties" : {
-            "structurizr.dsl.identifier" : "view"
+            "structurizr.dsl.identifier" : "app"
           },
           "relationships" : [ {
-            "description" : "recieves events",
+            "description" : "translates UI events",
             "destinationId" : "5",
-            "id" : "10",
+            "id" : "9",
             "sourceId" : "4",
             "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
-          "technology" : "Blazor Web Views"
-        }, {
-          "description" : "Handles UI Events",
-          "documentation" : { },
-          "id" : "5",
-          "name" : "View Model",
-          "properties" : {
-            "structurizr.dsl.identifier" : "viewmodel"
-          },
-          "relationships" : [ {
-            "description" : "updates game logic based on user feedback",
-            "destinationId" : "6",
-            "id" : "12",
-            "sourceId" : "5",
-            "tags" : "Relationship"
-          } ],
-          "tags" : "Element,Component"
+          "technology" : "Blazor"
         }, {
           "description" : "Contains the domain / game logic",
           "documentation" : { },
-          "id" : "6",
-          "name" : "Model",
+          "id" : "5",
+          "name" : "uttt.game",
           "properties" : {
-            "structurizr.dsl.identifier" : "model"
+            "structurizr.dsl.identifier" : "game"
           },
           "relationships" : [ {
-            "description" : "updates UI based on game logic",
-            "destinationId" : "5",
-            "id" : "11",
-            "sourceId" : "6",
+            "description" : "Updates game based on state",
+            "destinationId" : "4",
+            "id" : "10",
+            "sourceId" : "5",
             "tags" : "Relationship"
           } ],
           "tags" : "Element,Component"
@@ -130,7 +114,7 @@
           "structurizr.dsl.identifier" : "webapp"
         },
         "tags" : "Element,Container",
-        "technology" : "Maui .NET App"
+        "technology" : ".NET 8 Blazor App"
       } ],
       "description" : "uttt - Ultimate Tic Tac Toe",
       "documentation" : { },
@@ -145,7 +129,7 @@
   },
   "name" : "uttt - Ultimate Tic Tac Toe",
   "properties" : {
-    "structurizr.dsl" : "d29ya3NwYWNlICJ1dHR0IC0gVWx0aW1hdGUgVGljIFRhYyBUb2UiICJBcmNoaXRlY3R1cmUgZG9jdW1lbnRhdGlvbiBmb3IgTXkgUHJvamVjdCIgewoKICAgIG1vZGVsIHsKICAgICAgICB1c2VyID0gcGVyc29uICJQbGF5ZXIiIHsKICAgICAgICAgICAgZGVzY3JpcHRpb24gIkEgcGVyc29uIHBsYXlpbmcgdGhlIGdhbWUiCiAgICAgICAgfQogICAgCiAgICAgICAgdXR0dCA9IHNvZnR3YXJlU3lzdGVtICJ1dHR0IC0gVWx0aW1hdGUgVGljIFRhYyBUb2UiIHsKICAgICAgICAgICAgZGVzY3JpcHRpb24gInV0dHQgLSBVbHRpbWF0ZSBUaWMgVGFjIFRvZSIKICAgIAogICAgICAgICAgICB3ZWJhcHAgPSBjb250YWluZXIgIlN0YXRpYyBXZWIgQXBwIiB7CiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICJNYXVpIC5ORVQgQXBwIgogICAgCiAgICAgICAgICAgICAgICB2aWV3ID0gY29tcG9uZW50ICJWaWV3IiB7CiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIlJlbmRlcnMgdGhlIFVJIgogICAgICAgICAgICAgICAgICAgIHRlY2hub2xvZ3kgIkJsYXpvciBXZWIgVmlld3MiCiAgICAgICAgICAgICAgICB9CiAgICAKICAgICAgICAgICAgICAgIHZpZXdNb2RlbCA9IGNvbXBvbmVudCAiVmlldyBNb2RlbCIgewogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJIYW5kbGVzIFVJIEV2ZW50cyIKICAgICAgICAgICAgICAgIH0KICAgIAogICAgICAgICAgICAgICAgbW9kZWwgPSBjb21wb25lbnQgIk1vZGVsIiB7CiAgICAgICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIkNvbnRhaW5zIHRoZSBkb21haW4gLyBnYW1lIGxvZ2ljIgogICAgICAgICAgICAgICAgfQogICAgICAgICAgICB9CiAgICAKICAgICAgICAgICAgdXNlciAtPiB2aWV3ICJVc2VzIgogICAgICAgICAgICB2aWV3IC0+IHZpZXdNb2RlbCAicmVjaWV2ZXMgZXZlbnRzIgogICAgICAgICAgICBtb2RlbCAtPiB2aWV3TW9kZWwgInVwZGF0ZXMgVUkgYmFzZWQgb24gZ2FtZSBsb2dpYyIKICAgICAgICAgICAgdmlld01vZGVsIC0+IG1vZGVsICJ1cGRhdGVzIGdhbWUgbG9naWMgYmFzZWQgb24gdXNlciBmZWVkYmFjayIKICAgICAgICB9CiAgICB9CiAgICAhYWRycyAuL2FkciBhZHJ0b29scwoKICAgIHZpZXdzIHsKICAgICAgICBzeXN0ZW1Db250ZXh0IHV0dHQgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgYXV0b2xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgY29udGFpbmVyIHV0dHQgewogICAgICAgICAgICBpbmNsdWRlICoKICAgICAgICAgICAgYXV0b2xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgY29tcG9uZW50IHdlYmFwcCB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICB0aGVtZSBkZWZhdWx0CiAgICB9Cn0="
+    "structurizr.dsl" : "d29ya3NwYWNlICJ1dHR0IC0gVWx0aW1hdGUgVGljIFRhYyBUb2UiICJBcmNoaXRlY3R1cmUgZG9jdW1lbnRhdGlvbiBmb3IgTXkgUHJvamVjdCIgewoKICAgIG1vZGVsIHsKICAgICAgICB1c2VyID0gcGVyc29uICJQbGF5ZXIiIHsKICAgICAgICAgICAgZGVzY3JpcHRpb24gIkEgcGVyc29uIHBsYXlpbmcgdGhlIGdhbWUiCiAgICAgICAgfQogICAgCiAgICAgICAgdXR0dCA9IHNvZnR3YXJlU3lzdGVtICJ1dHR0IC0gVWx0aW1hdGUgVGljIFRhYyBUb2UiIHsKICAgICAgICAgICAgZGVzY3JpcHRpb24gInV0dHQgLSBVbHRpbWF0ZSBUaWMgVGFjIFRvZSIKICAgIAogICAgICAgICAgICB3ZWJhcHAgPSBjb250YWluZXIgIlN0YXRpYyBXZWIgQXBwIiB7CiAgICAgICAgICAgICAgICB0ZWNobm9sb2d5ICIuTkVUIDggQmxhem9yIEFwcCIKICAgIAogICAgICAgICAgICAgICAgYXBwID0gY29tcG9uZW50ICJ1dHR0LmFwcCIgewogICAgICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJVbHRpbWF0ZSBUaWMgVGFjIFRvZSBBcHAiCiAgICAgICAgICAgICAgICAgICAgdGVjaG5vbG9neSAiQmxhem9yIgogICAgICAgICAgICAgICAgfQogICAgCiAgICAgICAgICAgICAgICBnYW1lID0gY29tcG9uZW50ICJ1dHR0LmdhbWUiIHsKICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbiAiQ29udGFpbnMgdGhlIGRvbWFpbiAvIGdhbWUgbG9naWMiCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgIH0KICAgIAogICAgICAgICAgICB1c2VyIC0+IGFwcCAiVXNlcyIKICAgICAgICAgICAgYXBwIC0+IGdhbWUgInRyYW5zbGF0ZXMgVUkgZXZlbnRzIgogICAgICAgICAgICBnYW1lIC0+IGFwcCAiVXBkYXRlcyBnYW1lIGJhc2VkIG9uIHN0YXRlIgogICAgICAgIH0KICAgIH0KICAgICFhZHJzIC4vYWRyIGFkcnRvb2xzCgogICAgdmlld3MgewogICAgICAgIHN5c3RlbUNvbnRleHQgdXR0dCB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBjb250YWluZXIgdXR0dCB7CiAgICAgICAgICAgIGluY2x1ZGUgKgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBjb21wb25lbnQgd2ViYXBwIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIGF1dG9sYXlvdXQgbHIKICAgICAgICB9CgogICAgICAgIHRoZW1lIGRlZmF1bHQKICAgIH0KfQ=="
   },
   "views" : {
     "componentViews" : [ {
@@ -171,10 +155,6 @@
         "id" : "5",
         "x" : 0,
         "y" : 0
-      }, {
-        "id" : "6",
-        "x" : 0,
-        "y" : 0
       } ],
       "externalContainerBoundariesVisible" : false,
       "generatedKey" : true,
@@ -183,16 +163,14 @@
       "relationships" : [ {
         "id" : "10"
       }, {
-        "id" : "11"
+        "id" : "6"
       }, {
-        "id" : "12"
-      }, {
-        "id" : "7"
+        "id" : "9"
       } ]
     } ],
     "configuration" : {
       "branding" : { },
-      "lastSavedView" : "Container-001",
+      "lastSavedView" : "SystemContext-001",
       "styles" : { },
       "terminology" : { },
       "themes" : [ "https://static.structurizr.com/themes/default/theme.json" ]
@@ -221,7 +199,7 @@
       "key" : "Container-001",
       "order" : 2,
       "relationships" : [ {
-        "id" : "8"
+        "id" : "7"
       } ],
       "softwareSystemId" : "2"
     } ],
@@ -249,7 +227,7 @@
       "key" : "SystemContext-001",
       "order" : 1,
       "relationships" : [ {
-        "id" : "9"
+        "id" : "8"
       } ],
       "softwareSystemId" : "2"
     } ]

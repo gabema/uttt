@@ -7,25 +7,20 @@ model {
         description "uttt - Ultimate Tic Tac Toe"
 
         webapp = container "Static Web App" {
-            technology "Maui .NET App"
+            technology ".NET 8 Blazor App"
 
-            view = component "View" {
-                description "Renders the UI"
-                technology "Blazor Web Views"
+            app = component "uttt.app" {
+                description "Ultimate Tic Tac Toe App"
+                technology "Blazor"
             }
 
-            viewModel = component "View Model" {
-                description "Handles UI Events"
-            }
-
-            model = component "Model" {
+            game = component "uttt.game" {
                 description "Contains the domain / game logic"
             }
         }
 
-        user -> view "Uses"
-        view -> viewModel "recieves events"
-        model -> viewModel "updates UI based on game logic"
-        viewModel -> model "updates game logic based on user feedback"
+        user -> app "Uses"
+        app -> game "translates UI events"
+        game -> app "Updates game based on state"
     }
 }
