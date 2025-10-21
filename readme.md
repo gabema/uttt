@@ -2,17 +2,9 @@
 
 A simple playable Ultimate Tic Tac Toe browser game.
 
-Todo list
-- [x] Rename project
-- [x] Provide an insightful project description
-- [ ] Document softwareSystem context C4 Model
-- [ ] Define most important ADRs
-
-
 Links:
 - [Structurizr Lite Local Runtime](http://localhost:8080/workspace/diagrams)
 - [Excalidraw](https://excalidraw.com/)
-
 
 ## Required tools
 1. [Structurizr Lite](https://docs.structurizr.com/) - C4 Model documentation
@@ -35,6 +27,5 @@ podman ps
 podman exec -it <container_id> bash
 /usr/local/structurizr$ adr list
 ```
-
 ## Deploying to gh-pages
 Changes checked into main are continuously deployed to gh-pages via Github actions. Site is available at [Ultimate Tic Tac Toe](https://gabema.github.io/uttt/wwwroot/)
