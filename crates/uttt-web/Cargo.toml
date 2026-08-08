@@ -1,0 +1,12 @@
+[package]
+name = "uttt-web"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+console_error_panic_hook = "0.1.7"
+gloo-timers = { version = "0.4.0", features = ["futures"] }
+leptos = { version = "0.8.20", features = ["csr"] }
+uttt-core = { path = "../uttt-core" }

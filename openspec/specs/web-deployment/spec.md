@@ -1,4 +1,11 @@
-## ADDED Requirements
+# web-deployment
+
+## Purpose
+
+Building the WASM app with Trunk and shipping it to GitHub Pages via GitHub
+Actions, including the project-page base path and the CI test/build gate.
+
+## Requirements
 
 ### Requirement: WASM build with correct base path
 

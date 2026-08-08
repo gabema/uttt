@@ -1,0 +1,5 @@
+[build]
+target = "index.html"
+# The GitHub Pages project-page base path (/uttt/) is passed only in the release
+# build via `trunk build --public-url "/uttt/"` (see pages.yml). Local
+# `trunk serve` therefore serves from "/".

@@ -4,77 +4,71 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A playable Ultimate Tic Tac Toe browser game, built as a **.NET 8 Blazor WebAssembly** app and deployed as static files to GitHub Pages.
+A playable Ultimate Tic Tac Toe browser game, built as a **Rust → WebAssembly** app using the **Leptos** framework, built with **Trunk**, and deployed as static files to GitHub Pages.
 
-> The current branch is `migrateToRustWasm`, but there is no Rust in the tree yet — all code is C#/.NET 8. Treat the Blazor stack below as the source of truth until Rust actually lands.
+> Migrated from an earlier .NET 8 Blazor WebAssembly implementation (see ADR 0006). No C#/.NET remains in the tree.
 
 ## Commands
 
-Run from the repo root (`uttt.sln` ties the projects together).
+A Cargo workspace at the repo root ties the crates together.
 
 ```bash
-dotnet restore
-dotnet build                    # build the whole solution
-dotnet test                     # run all xUnit tests
+cargo build                     # build the workspace
+cargo test -p uttt-core         # run the engine tests (native, fast, no browser)
+cargo clippy -p uttt-core --all-targets -- -D warnings
+cargo fmt --all
 ```
 
-Run the app locally (hot-reload dev server):
+Run a single test by name:
 
 ```bash
-dotnet run --project src/uttt.app/uttt.app.csproj
+cargo test -p uttt-core small_diagonal_x_wins
 ```
 
-Run a single test by name (xUnit via `dotnet test --filter`):
+Run the app locally (hot-reload dev server at http://localhost:8080/):
 
 ```bash
-dotnet test --filter "FullyQualifiedName~BoardTests.CanCreateBoard"
-dotnet test --filter "DisplayName~TestSmallSquareScenarios"   # a [Theory] and all its cases
+cd crates/uttt-web && trunk serve
 ```
 
-Produce the static publish output that GitHub Pages serves (mirrors `pages.yml`):
+Produce the static publish output GitHub Pages serves (mirrors `pages.yml`):
 
 ```bash
-dotnet publish src/uttt.app/uttt.app.csproj -c Release -o publish
-# static site lands in ./publish/wwwroot
+cd crates/uttt-web && trunk build --release --public-url "/uttt/"
+# static site lands in crates/uttt-web/dist
 ```
+
+> Windows/Git Bash gotcha: MSYS path conversion mangles the `/uttt/` argument into a Windows path. Locally prefix with `MSYS_NO_PATHCONV=1`, or omit `--public-url` for local builds (they serve from `/`). CI runs on Linux and is unaffected. Trunk under PowerShell also trips over an inherited `NO_COLOR=1`; prefer Git Bash locally.
 
 ## Architecture
 
-Three projects, split so game rules stay independent of the UI:
+Two crates, split so game rules stay independent of the UI:
 
-- **`src/uttt.game`** — pure game-logic library, no UI or framework deps. All domain types live in `Records.cs`.
-- **`src/uttt.app`** — Blazor WebAssembly UI. References `uttt.game`. Entry point `Program.cs` mounts `App` at `#app`.
-- **`test/utt.game.test`** — xUnit tests against `uttt.game` (win/draw detection for small and large boards).
+- **`crates/uttt-core`** — pure game-logic library. **No UI/WASM dependencies** (no `leptos`, `wasm-bindgen`, or `web-sys`). This is a hard rule: it keeps `cargo test` native and fast, and keeps the crate reusable under a different UI framework (the cross-platform hedge in ADR 0006). Holds the board model, win/draw detection, the `Game` state machine, and the `BoardView` projection.
+- **`crates/uttt-web`** — Leptos WebAssembly frontend. The **disposable view**: it renders entirely from `uttt_core`'s `BoardView`, forwards clicks to `Game::play`, and owns only the transient capture animation. It computes no game logic and stores no authoritative game state.
 
-### Domain model (`src/uttt.game/Records.cs`)
+### Key invariants
 
-The board is modeled recursively with immutable `record struct`s:
+These are load-bearing — preserve them when changing code (see `openspec/` design.md and ADR 0006):
 
-- `SpotState` — `Open | X | O | Draw`.
-- `SmallSquare` — nine `SpotState`s (one 3×3 board), fields named by position (`TopLeft` … `BottomRight`).
-- `LargeSquare` — nine `SmallSquare`s (the outer 3×3), same positional field names. `LargeSquare.NewBoard()` builds an empty game.
-- Both implement `ISquare<T>.ToSpot()`, which reports the winner/draw/open state of that square.
+1. **`uttt-core` stays framework-free.** Never add a UI/WASM dependency to it.
+2. **The view is disposable.** All game facts and all derived display facts come from the engine projection. The permanent winner backface is *derived* from small-board status; only the in-flight pulse is view-local state.
+3. **Draw semantics.** Three *drawn* small boards do **not** win the large board — draws are excluded when evaluating lines, at both levels. Covered by `uttt-core` tests; keep it that way.
 
-Win detection is centralized in `SpotStateUtils.ToSpot(...)`: it takes nine `Func<SpotState>` accessors plus an `includeDraw` flag and checks all 8 lines via `UnionEvaluator`. `SmallSquare` passes its own cells; `LargeSquare` passes each child's `ToSpot`, so the same logic evaluates both levels. Note `includeDraw: false` is used at both levels — a line of three *drawn* small boards does **not** win the large board; a full-but-unwon square resolves to `Draw`.
+### Domain model (`crates/uttt-core`)
 
-`Game(LargeSquare Square, Player NextPlayer, int SquareToPlay)` is a defined record but is **not currently wired into the UI** — the live game state is held in the component instead (see below).
+- `Player` (`X | O`), `Cell` (`Empty | Mark(Player)`), `SquareStatus` (`InPlay | Won(Player) | Draw`).
+- `SmallBoard { cells: [Cell; 9] }` and `Board { boards: [SmallBoard; 9] }`, indexed `0..8` (row-major). Win detection is centralized in `resolve(...)` over a `const LINES: [[usize; 3]; 8]` table, used for both the small and large square — the Rust equivalent of the old `SpotStateUtils.ToSpot`.
+- `Game { board, current, constraint }` owns the interactive rules. `play(cell)` (flat `0..81`) returns `Result<MoveOutcome, MoveError>`; `view()` returns the `BoardView { cells: [Cell; 81], small_status: [SquareStatus; 9], playable: [bool; 9], overall, next_player }` projection.
 
-### UI and interactive game rules (`src/uttt.app/Shared/UttBoard.razor`)
-
-This component is the most important file to understand: the **interactive rules of Ultimate Tic Tac Toe live here, not in `uttt.game`**. The library only knows how to score a square. `UttBoard.razor` owns:
-
-- Mutable game state as component fields: `boardState` (a `LargeSquare`), `CurrentPlayer`, and `NextBoardToPlay` (`-1` = play anywhere, else the forced small-board index).
-- The move rule in `OnCellClick`: the small index just played dictates the next player's target board; if that target is already won/full, the constraint resets to "anywhere" (`-1`).
-- Immutable updates via `with` expressions — `SetSpot`/`GetSpot`/`GetSmallSquare` translate a flat `0..80` cell index into the nested positional record fields with `switch` expressions.
-- Presentation state: highlighting the playable board(s), and the capture animation (`justCaptured` pulse → `flippedIndices` flip) driven by `TriggerFlipAsync`.
-
-When changing game rules, edit `UttBoard.razor`. When changing what counts as a win, edit `SpotStateUtils`/`ToSpot` in `Records.cs` and cover it in `BoardTests.cs`.
+When changing game rules, edit `crates/uttt-core/src/game.rs` and cover it in tests. When changing what counts as a win, edit `resolve`/`LINES` in `crates/uttt-core/src/board.rs`. The view (`crates/uttt-web/src/main.rs`) must not encode rules.
 
 ## CI/CD
 
-- `.github/workflows/ci.yml` — on PRs (any branch) and pushes to `main`: restore → `dotnet test` → Release build.
-- `.github/workflows/pages.yml` — on push to `main` (or manual dispatch): publishes the Blazor app and deploys `./publish/wwwroot` to the `gh-pages` branch.
+- `.github/workflows/ci.yml` — on PRs (any branch) and pushes to `main`: `cargo fmt --check`, clippy + `cargo test` on `uttt-core`, then a `trunk build` of the wasm app. Uses `Swatinem/rust-cache` and a prebuilt Trunk binary.
+- `.github/workflows/pages.yml` — on push to `main` (or manual dispatch): `trunk build --release --public-url "/uttt/"`, then the official GitHub Pages artifact flow (`actions/upload-pages-artifact` + `actions/deploy-pages`). No `gh-pages` branch.
+- **One-time manual prerequisite** (cannot be automated): repo *Settings → Pages → Build and deployment → Source: "GitHub Actions"*. Until set, the deploy job fails.
 
 ## Docs / architecture records
 
-`doc/` holds C4 model sources (`workspace.dsl`, `model.dsl`) rendered with **Structurizr Lite**, and Architecture Decision Records under `doc/adr/` (managed with `adr-tools`). The `readme.md` documents the Podman-based Structurizr setup. ADR 0003 records the choice of Blazor for cross-platform deployability; 0005 records GitHub Pages deployment.
+`doc/` holds C4 model sources (`workspace.dsl`, `model.dsl`) rendered with **Structurizr Lite**, and Architecture Decision Records under `doc/adr/` (managed with `adr-tools`). ADR 0006 records the choice of Leptos over Dioxus (superseding the Blazor framework choice in ADR 0003); ADR 0007 records the GitHub Pages artifact deploy flow.

@@ -1,4 +1,13 @@
-## ADDED Requirements
+# game-ui
+
+## Purpose
+
+The interactive Leptos frontend — rendering the board from the engine
+projection, forwarding player moves, highlighting playable boards, and the
+capture (pulse → flip) animation. Holds no game logic and no authoritative
+state.
+
+## Requirements
 
 ### Requirement: Board rendering from the engine projection
 
@@ -11,6 +20,12 @@ derived display facts itself, and SHALL NOT store the authoritative game state.
 
 - **WHEN** the projection reports a cell as X or O
 - **THEN** the rendered cell shows that symbol; open cells render blank
+
+#### Scenario: Marks are legible on non-playable boards
+
+- **WHEN** a small board is unsolved but not currently playable (not highlighted)
+- **THEN** its X and O marks render with a color that contrasts the board
+  background, independent of the page or browser theme
 
 #### Scenario: Overall winner is shown
 

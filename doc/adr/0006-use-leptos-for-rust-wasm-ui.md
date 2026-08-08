@@ -4,9 +4,9 @@ Date: 2026-08-08
 
 ## Status
 
-Proposed
+Accepted
 
-Relates to [3. Use Blazor for progressive web app framework](0003-use-blazor-for-cross-platform-deployability.md). This decision is contingent on the planned migration off Blazor/.NET to Rust/WASM; if and when that migration is accepted, this ADR partially supersedes the framework portion of ADR 0003.
+Supersedes the framework portion of [3. Use Blazor for progressive web app framework](0003-use-blazor-for-cross-platform-deployability.md). The migration off Blazor/.NET to Rust/WASM has been implemented: the app is now a Leptos WebAssembly frontend over a pure `uttt-core` crate, built with Trunk.
 
 ## Context
 

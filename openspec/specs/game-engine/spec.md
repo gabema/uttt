@@ -1,4 +1,12 @@
-## ADDED Requirements
+# game-engine
+
+## Purpose
+
+The pure game domain — board representation, win/draw detection, the interactive
+move rules and turn state, and the projection the UI renders from. Framework-
+agnostic; lives in `uttt-core`.
+
+## Requirements
 
 ### Requirement: Board representation
 
