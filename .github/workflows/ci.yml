@@ -6,6 +6,9 @@ on:
   push:
     branches: ['main']
 
+env:
+  TRUNK_VERSION: v0.21.14
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -13,16 +16,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          dotnet-version: '8.0.x'
+          targets: wasm32-unknown-unknown
+          components: clippy, rustfmt
 
-      - name: Restore
-        run: dotnet restore
+      - name: Cache cargo build
+        uses: Swatinem/rust-cache@v2
 
-      - name: Run tests
-        run: dotnet test --verbosity normal
+      - name: Format check
+        run: cargo fmt --all -- --check
 
-      - name: Build
-        run: dotnet build --no-restore --configuration Release --verbosity minimal
+      # Lint and test the pure core natively. The Leptos crate targets wasm and
+      # is gated by the Trunk build below rather than a host-target compile.
+      - name: Clippy (uttt-core)
+        run: cargo clippy -p uttt-core --all-targets -- -D warnings
+
+      - name: Test engine (uttt-core)
+        run: cargo test -p uttt-core
+
+      - name: Install Trunk (prebuilt binary)
+        run: |
+          mkdir -p "$HOME/.trunk"
+          curl -fsSL "https://github.com/trunk-rs/trunk/releases/download/${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz" \
+            | tar -xzf - -C "$HOME/.trunk" trunk
+          echo "$HOME/.trunk" >> "$GITHUB_PATH"
+
+      - name: Build WASM app
+        working-directory: crates/uttt-web
+        run: trunk build --release

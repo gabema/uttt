@@ -4,7 +4,10 @@ Date: 2025-10-17
 
 ## Status
 
-Accepted
+Superseded by [6. Use Leptos over Dioxus for the Rust/WASM UI](0006-use-leptos-for-rust-wasm-ui.md)
+
+The framework choice recorded here (Blazor/.NET) was replaced by a Rust/WASM
+(Leptos) implementation. See ADR 0006 for the rationale.
 
 ## Context
 

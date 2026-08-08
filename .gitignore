@@ -7,5 +7,12 @@ doc/.structurizr/
 bin/
 obj/
 
+## Rust / WASM build output
+/target/
+**/dist/
+
 .DS_Store
 .vscode/
+
+# Don't commit archived changes
+openspec/changes/archive/

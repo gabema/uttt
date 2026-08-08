@@ -1,0 +1,11 @@
+# uttt-core: pure game logic. MUST NOT depend on any UI/WASM crate
+# (no leptos, wasm-bindgen, web-sys). This keeps `cargo test` native and
+# fast, and keeps the crate reusable under a different UI framework later.
+[package]
+name = "uttt-core"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

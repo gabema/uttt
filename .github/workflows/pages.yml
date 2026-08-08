@@ -1,32 +1,67 @@
-name: Publish to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: ['main']
   workflow_dispatch: {}
 
+# One-time manual prerequisite that cannot be automated:
+#   Repo Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress production deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  TRUNK_VERSION: v0.21.14
+
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          dotnet-version: '8.0.x'
+          targets: wasm32-unknown-unknown
 
-      - name: Restore and publish Blazor app
+      - name: Cache cargo build
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Trunk (prebuilt binary)
         run: |
-          dotnet restore
-          dotnet publish src/uttt.app/uttt.app.csproj -c Release -o publish
+          mkdir -p "$HOME/.trunk"
+          curl -fsSL "https://github.com/trunk-rs/trunk/releases/download/${TRUNK_VERSION}/trunk-x86_64-unknown-linux-gnu.tar.gz" \
+            | tar -xzf - -C "$HOME/.trunk" trunk
+          echo "$HOME/.trunk" >> "$GITHUB_PATH"
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      # Project page serves from https://gabema.github.io/uttt/, so assets must
+      # resolve under the /uttt/ base path. (On the Linux runner this flag is not
+      # subject to the Git Bash path mangling seen on Windows.)
+      - name: Build release
+        working-directory: crates/uttt-web
+        run: trunk build --release --public-url "/uttt/"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./publish/wwwroot
-          publish_branch: gh-pages
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
+          path: crates/uttt-web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

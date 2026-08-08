@@ -7,25 +7,21 @@ model {
         description "uttt - Ultimate Tic Tac Toe"
 
         webapp = container "Static Web App" {
-            technology "Maui .NET App"
+            technology "Rust / WebAssembly (Leptos), built with Trunk"
 
-            view = component "View" {
-                description "Renders the UI"
-                technology "Blazor Web Views"
+            view = component "uttt-web (View)" {
+                description "Leptos frontend. Renders from the engine projection, forwards clicks, and owns only the capture animation. Holds no game logic and no authoritative state."
+                technology "Rust, Leptos, WASM"
             }
 
-            viewModel = component "View Model" {
-                description "Handles UI Events"
-            }
-
-            model = component "Model" {
-                description "Contains the domain / game logic"
+            engine = component "uttt-core (Engine)" {
+                description "Pure game logic: board model, win/draw detection, the move rule and turn state, and the BoardView projection the UI renders from."
+                technology "Rust (no UI/WASM dependencies)"
             }
         }
 
-        user -> view "Uses"
-        view -> viewModel "recieves events"
-        model -> viewModel "updates UI based on game logic"
-        viewModel -> model "updates game logic based on user feedback"
+        user -> view "Plays via clicks"
+        view -> engine "Forwards moves (play); reads the projection (view)"
+        engine -> view "Provides BoardView projection + MoveOutcome"
     }
 }
