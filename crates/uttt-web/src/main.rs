@@ -11,8 +11,27 @@ use leptos::prelude::*;
 use uttt_core::{Cell, Game, Player, SquareStatus};
 
 fn main() {
+    // Panic-message formatting is a dev aid; under `panic = "abort"` in release
+    // it adds bytes and compile time for no runtime benefit. Keep it in debug.
+    #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
-    leptos::mount::mount_to_body(|| view! { <App /> });
+    mount();
+}
+
+/// Mount the live app into the `#app` container, replacing the static pre-boot
+/// shell that `index.html` paints before the wasm boots. `mount_to_body` would
+/// *append* — leaving the shell rendered alongside a duplicate board — so we
+/// mount into the container and clear the shell out of it first.
+fn mount() {
+    use leptos::wasm_bindgen::JsCast;
+    let app = leptos::web_sys::window()
+        .and_then(|w| w.document())
+        .and_then(|d| d.get_element_by_id("app"))
+        .expect("#app mount container is present in index.html");
+    // Drop the static shell so exactly one board exists after mount.
+    app.set_inner_html("");
+    let app: leptos::web_sys::HtmlElement = app.unchecked_into();
+    leptos::mount::mount_to(app, || view! { <App /> }).forget();
 }
 
 #[component]

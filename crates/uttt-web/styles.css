@@ -1,6 +1,11 @@
 html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; }
 body { display: flex; align-items: center; justify-content: center; font-family: system-ui, sans-serif; }
 
+/* Mount container for the app. Holds the static pre-boot shell, then the live
+   board after mount. Fills the flex-centered body so shell and live board share
+   identical geometry (no layout shift on handoff). */
+#app { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
 .utt-container {
 	width: 100%; height: 100%;
 	display: flex; align-items: center; justify-content: center; flex-direction: column;
