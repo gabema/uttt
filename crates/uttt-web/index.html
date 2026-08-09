@@ -4,8 +4,34 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ultimate Tic Tac Toe</title>
-    <link data-trunk rel="rust" data-wasm-opt="z" />
-    <link data-trunk rel="css" href="styles.css" />
+    <!-- --enable-bulk-memory: the size-tuned release profile (opt-level "z" +
+         LTO) inlines std's memcpy/memset as wasm bulk-memory ops; Trunk's
+         bundled wasm-opt rejects them unless the feature is enabled here. -->
+    <link data-trunk rel="rust" data-wasm-opt="z" data-wasm-opt-params="--enable-bulk-memory" />
+    <!-- Inlined (not linked) so there is no render-blocking stylesheet request
+         in the boot path and the pre-boot shell below is styled on HTML parse. -->
+    <link data-trunk rel="inline" href="styles.css" />
   </head>
-  <body></body>
+  <body>
+    <!-- The live Leptos app mounts into #app, clearing this static shell first
+         (see main.rs `mount`). The shell reuses the live board's classes and
+         geometry so it paints a meaningful frame before the wasm boots, with no
+         layout shift on handoff. It is inert: no marks, status, or game logic. -->
+    <div id="app">
+      <div class="utt-container">
+        <div class="next-player">Next: X</div>
+        <div class="utt-grid">
+          <div class="small-board"><div class="flip-inner"><div class="front"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
+          <div class="small-board"><div class="flip-inner"><div class="front"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
+          <div class="small-board"><div class="flip-inner"><div class="front"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
+          <div class="small-board"><div class="flip-inner"><div class="front"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
+          <div class="small-board"><div class="flip-inner"><div class="front"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
+          <div class="small-board"><div class="flip-inner"><div class="front"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
+          <div class="small-board"><div class="flip-inner"><div class="front"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
+          <div class="small-board"><div class="flip-inner"><div class="front"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
+          <div class="small-board"><div class="flip-inner"><div class="front"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div></div></div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
